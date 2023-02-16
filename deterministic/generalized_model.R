@@ -514,7 +514,7 @@ tau<-subset(parameters_values, str_sub(names(parameters_values), 1, 3) == "tau")
 
 
 #  the points in time where to calculate variables values 
-time_values <- seq(0, 20, by = 1) 
+time_values <- seq(0, 70, by = 1) 
 ####
 
 #  numerically solving the SIR model 
@@ -772,7 +772,7 @@ tau<-subset(parameters_values, str_sub(names(parameters_values), 1, 3) == "tau")
 
 
 #  the points in time where to calculate variables values 
-time_values <- seq(20, 40, by = 1) 
+time_values <- seq(71, 120, by = 1) 
 ####
 
 #  numerically solving the SIR model 
@@ -790,9 +790,6 @@ sir_values_2 <- ode(
 ##### data ####
 sir_values <- rbind (sir_values_1, sir_values_2)
 
-names(state[70])
-
-
 ##### See Graph ####
 
 time<-sir_values[,1]
@@ -802,8 +799,6 @@ L <-rowSums(sir_values[,19:34])
 I <-rowSums(sir_values[,35:50])
 T <-rowSums(sir_values[,51:114])
 R <-rowSums(sir_values[,115:130])
-
-a<-plot(time, rowSums(sir_values[,2:130]))
 
 # plotting the time seriRs of susceptiblRs:
 plot(time, S, type = "l", col = "blue",
@@ -823,10 +818,5 @@ lines(time, R, col = "green")
 legend("topright", c("Susceptibles","Early Latent", "Late latent", "Infectious", "Treated","Recovered"),
        col = c("blue","darkorchid","darkmagenta", "red", "darkgoldenrod2" ,"green"), lty = 1, bty = "n")
 
-#Verification
-#####
-for ( i in 1:length(parameters_values)){
-  
-  assign(paste0(names(parameters_values[i])),parameters_values[i] )
-}
+
 
