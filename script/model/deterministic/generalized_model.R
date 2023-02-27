@@ -5,17 +5,10 @@ library(stringr)
 library(dplyr)
 
 #### write differentials equations ####
-
 sir_equations <- function(time, state, parameters_values) {
   with(as.list(c(state, parameters_values)), {
     
-    # Vector with parameters 
-    alpha<-subset(parameters_values, str_sub(names(parameters_values), 1, 5) == "alpha")
-    lambda_1<- subset(parameters_values, str_sub(names(parameters_values), 1, 7) == "Lambda1")
-    lambda_2<-subset(parameters_values, str_sub(names(parameters_values), 1, 7) == "Lambda2")
-    tau<-subset(parameters_values, str_sub(names(parameters_values), 1, 3) == "tau")
-    
-    #vector
+    #vector of each state
     vE  <-state[str_sub(names(state), 1, 1) == "E"] #vector with all the Early Latent types
     vL  <-state[str_sub(names(state), 1, 1) == "L"] #vector with all the Late latent types
     vI  <-state[str_sub(names(state), 1, 1) == "I"] #vector with all the Infected types
@@ -32,69 +25,67 @@ sir_equations <- function(time, state, parameters_values) {
     T <- sum(vT)
     R <-sum(vR)
     N=S+E+L+I+T+R
-    
-    ### Equation ###
-    
+  
     #ODE for Susceptible compartment
-    assign(paste0("dS"),
-           pi  * N 
-           - mu * S 
-           - sum((vTs + vI) * alpha * S) 
+    assign("dS",
+           pi  * N #birth
+           - mu * S #naural death 
+           - sum((vTs + vI) * alpha * S) #infection
     )
   
     #ODE for Early Latent stage compartments
     for (i in 1: length(vE)){
       assign(paste0("d", names(vE)[i]), 
-             (vTs[i] + vI[i]) * alpha[i] * S +
-               (vTs[i] + vI[i]) * lambda_1[i] * L +
-               (vTs[i] + vI[i]) * lambda_2[i] * R - 
-               vE[i] * (epsilon + mu + delta1) 
+             (vTs[i] + vI[i]) * alpha[i] * S + #infection from Suscepitble
+               (vTs[i] + vI[i]) * lambda_1[i] * L + #infection from Late latent
+               (vTs[i] + vI[i]) * lambda_2[i] * R - #infection from Suscepitble
+               vE[i] * (epsilon + mu + delta1)  #transition to late latent, death, transition to active stage
       )
     }
     
     #ODE for Late Latent stage compartments
     for (i in 1:length(vL)){
       assign(paste0("d", names(vL[i])),
-             epsilon * vE[i] -
-               (mu + delta2)  * vL[i] -
-               sum((vTs + vI) * lambda_1 * vL[i]) 
-             
+             epsilon * vE[i] - #transition from early latent
+               (mu + delta2)  * vL[i] - #death, and transition to active stage
+               sum((vTs + vI) * lambda_1 * vL[i]) #infection
       )
-   
     }
     
     #ODE for Infected stage compartments
     for (i in 1:length(vI)){
       assign(paste0("d", names(vI[i])), 
-             delta1 * vE[i] + 
-               delta2 * vL[i] + 
-               phi * vR[i] -
-               (mu + theta + omicron + beta) * vI[i]
+             delta1 * vE[i] +  #transition from Early latent
+               delta2 * vL[i] + #transition from Late latent
+               phi * vR[i] - #relaspe from Recovered
+               (mu + theta + omicron + beta) * vI[i] #natural death, death due to tb, natural cured, go to treatment
       )
     }
     
     #ODE for Treated stage compartments
     for (i in 1:length(vT)){
       assign(paste0("d", names(vT)[i]), 
-             - ( mu + theta + omicron + tau[i]) * vT[i] -
+             - ( mu + theta + omicron ) * vT[i] - 
+               #natural death, death due to tb, natural cured
                
-               sum( rho * (resistance_matrix[[as.numeric(str_sub(names(vT[i]),-1))]]
+               sum( rho * (resistance_matrix[[as.numeric(str_sub(names(vT[i]),-1))]] 
                            [str_sub(names(vT), s_first, s_last)[i],]) * vT[i]) +
+               #transition to other strain due to resistance acquisition
                
                sum( rho * (resistance_matrix[[as.numeric(str_sub(names(vT[i]),-1))]]
                            [,str_sub(names(vT[i]), s_first, s_last)]) * 
                       subset(vT, str_sub(names(vT), -1) == str_sub(names(vT[i]), -1))) -
+               #transition from other strain due to resistance acquisition
                
-               sum( ita *  (new_treatment_t1[str_sub(names(vT), s_first, s_last)[i], str_sub(names(vT), t_first, t_last)[i]]
-                            +       new_treatment_t2[str_sub(names(vT), s_first, s_last)[i], str_sub(names(vT), t_first, t_last)[i]]
-                            +       new_treatment_t3[str_sub(names(vT), s_first, s_last)[i], str_sub(names(vT), t_first, t_last)[i]]
-                           +       new_treatment_t4[str_sub(names(vT), s_first, s_last)[i], str_sub(names(vT), t_first, t_last)[i]]) *
-                     vT[i]) +
+               sum( ita *  sapply(new_treatment, function(x) sum(x[str_sub(names(vT), s_first, s_last)[i], str_sub(names(vT), t_first, t_last)[i]])) * vT[i]) +
+               
+               #transition to other treatment
             
                sum(ita * ((eval(parse(text=paste0("new_treatment_",str_sub(names(vT),t_first, t_last)))[i])
                            [str_sub(names(vT[i]), s_first, s_last),]) 
                           *  subset(vT, str_sub(names(vT), s_first, s_last) == str_sub(names(vT[i]), s_first, s_last)))) +
-              
+               #transition from other treatment
+               
                beta * subset(vI, str_sub(names(vI), s_first, s_last) ==  str_sub(names(vT[i]), s_first, s_last)) * 
                ((1-sigma) * no_test[str_sub(names(vT)[i], s_first, s_last), 
                                  str_sub(names(vT)[i], t_first, t_last)] +
@@ -102,21 +93,21 @@ sir_equations <- function(time, state, parameters_values) {
                                                    str_sub(names(vT)[i], t_first, t_last)] +
                   nb_treatment * sigma * (1-omega) * false_result[str_sub(names(vT)[i], s_first, s_last), 
                                                                 str_sub(names(vT)[i], t_first, t_last)])
+             #transition from infected stage
       )
-      
     }
     
     #ODE for Recovered stage compartments
     for (i in 1:length(vR)){
       assign(paste0("d", names(vR)[i]), 
-            - ( phi + mu)  * vR[i] -
+            - ( phi + mu)  * vR[i] - #relapse, natural death
               sum((vTs + vI)* lambda_2 * 
-                     vR[i]) +
-               omicron * vI[i] +
+                     vR[i]) + #re-infection 
+               omicron * (vI[i] * vTs[i]) + #natural cured 
                
                sum(subset(tau, str_sub(names(tau), 5, 8) == str_sub(names(vR)[i], s_first, s_last))   * 
-                     subset(vT, str_sub(names(vT), s_first, s_last) == str_sub(names(vR)[i], s_first, s_last))) +
-               omicron *  vTs[i]
+                     subset(vT, str_sub(names(vT), s_first, s_last) == str_sub(names(vR)[i], s_first, s_last))) 
+            #cured due to the treatment 
       )
     }
     
@@ -146,98 +137,3 @@ sir_equations <- function(time, state, parameters_values) {
     )))
   })
 }
-
-####
-#### MATRICES #####
-##row and col name# 
-strains<-paste0(c("0","1"), rep(c("0","1"), each=2),rep(c("0","1"), each=4), rep(c("0","1"), each=8))
-treatments<-c("t1","t2","t3", "t4")
-
-### Resistance matrix ### (These matrices do not change over time )
-#resistance acquisition with 1st treatment
-resistance_matrix_t1 <- matrix(c(0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
-                                 0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), ncol=16, byrow=TRUE)
-
-colnames(resistance_matrix_t1)<-strains
-rownames(resistance_matrix_t1)<-strains
-
-#resistance acquisition with 2nd treatment
-resistance_matrix_t2 <- matrix(c(0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0, 
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1, 
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), ncol=16, byrow=TRUE)
-
-colnames(resistance_matrix_t2)<-strains
-rownames(resistance_matrix_t2)<-strains
-
-#resistance acquisition with third treatment
-resistance_matrix_t3 <- matrix(c(0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0, 
-                                 0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), ncol=16, byrow=TRUE)
-
-colnames(resistance_matrix_t3)<-strains
-rownames(resistance_matrix_t3)<-strains
-
-#resistance acquisition with fourth treatment
-resistance_matrix_t4 <- matrix(c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), ncol=16, byrow=TRUE)
-
-colnames(resistance_matrix_t4)<-strains
-rownames(resistance_matrix_t4)<-strains
-
-#list with all resistance matrices
-resistance_matrix<-list(resistance_matrix_t1, resistance_matrix_t2, resistance_matrix_t3, resistance_matrix_t4)
-

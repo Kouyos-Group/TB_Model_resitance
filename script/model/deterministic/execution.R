@@ -1,12 +1,11 @@
-library(here)
-source(here("./model/deterministic/generalized_model.R"))
-#before 70
-source(here("./model/deterministic/1st_scenario_before_70.R"))
-#  the points in time where to calculate variables values 
+#function
+source("/home/louis/Bureau/stage/script/model/deterministic/generalized_model.R")
+#scenario
+source("/home/louis/Bureau/stage/script/model/deterministic/scenarios/scenario_2000.R")
 ####
 
 #  numerically solving the SIR model 
-# Run before 70
+# Run
 i=1
 
 assign(paste0("sir_values_", i), ode(
@@ -17,21 +16,7 @@ assign(paste0("sir_values_", i), ode(
 )
 )
 
-# Run after 70
-source(here("./model/deterministic/2nd_scenario_after_70.R"))
-i=2
-
-assign(paste0("sir_values_", i), ode(
-  y = state,
-  times = time_values,
-  func = sir_equations,
-  parms = parameters_values 
-)
-)
-
-sir_values <-rbind(sir_values_1, sir_values_2[-1,])
-
-
+sir_values <-rbind(sir_values_1)
 
 #####
 
@@ -43,11 +28,9 @@ I <-rowSums(sir_values[,35:50])
 T <-rowSums(sir_values[,51:114])
 R <-rowSums(sir_values[,115:130])
 
-a<-plot(time, rowSums(sir_values_1[,2:130]))
-
 # plotting the time seriRs of susceptiblRs:
 plot(time, S, type = "l", col = "blue",
-     xlab = "time (months)", ylab = "number of people", ylim = c(0,16000))
+     xlab = "time (months)", ylab = "number of people", ylim = c(0,100000))
 # adding the time seriRs of early latent:
 lines(time, E, col = "darkorchid")
 # adding the time seriRs of late latent:
