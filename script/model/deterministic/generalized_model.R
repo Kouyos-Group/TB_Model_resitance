@@ -103,7 +103,7 @@ sir_equations <- function(time, state, parameters_values) {
             - ( phi + mu)  * vR[i] - #relapse, natural death
               sum((vTs + vI)* lambda_2 * 
                      vR[i]) + #re-infection 
-               omicron * (vI[i] * vTs[i]) + #natural cured 
+               omicron * (vI[i] + vTs[i]) + #natural cured 
                
                sum(subset(tau, str_sub(names(tau), 5, 8) == str_sub(names(vR)[i], s_first, s_last))   * 
                      subset(vT, str_sub(names(vT), s_first, s_last) == str_sub(names(vR)[i], s_first, s_last))) 
