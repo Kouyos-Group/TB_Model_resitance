@@ -87,7 +87,8 @@ cost <- function(free,fixed,data) {
   rR<-as.vector(rowsum(simulation[,133], rep(1:22, each=12)))/as.vector(rowsum(simulation[,131], rep(1:22, each=12)))
   rR<-rR[16:22]
   cost <- sum((Incidence-data$incidence/100000)^2) + sum((dead-data$death/100000)^2) + sum((rR-data$Rresist[16:22]/100)^2)
-  }
+  }else{ cost <- Inf}
+  
   return(cost)
 }
 
