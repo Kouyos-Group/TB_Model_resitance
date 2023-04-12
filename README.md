@@ -27,6 +27,10 @@ In the first stage, we simulate from 1971 (introduction of the first line of tre
 2. standard_strategy.R
 3. TRUNCATE_strategy.R
 
+#### data
+
+fit.RData
+
 ### Parametrization
 
 In this file, there is all the content used to estimate some parameters. The likelihood_gaussian.R script allows to launch the estimation. In the data file, there are the different data used to fit the model. These data are available on the WHO website. In the scenarios folder, there is the scenario_1971-2015.csv with the introduction of the first line of treatment (rifampicin) and scenario_2015-2021.R with the introduction of the second line of treatment (bedaqualine).  
