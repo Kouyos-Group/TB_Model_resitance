@@ -1,16 +1,24 @@
-# TB_Model_resitance
+######### TB__MODEL_RESISTANCE #########
 
-###General model 
+##### Script #####
 
-#3)different scenario
+###model/deterministic
 
-#3)execution
+execution.R
+
+#scenarios
+  intro_rifampicin_44_year.R
+  scenario_1st_line.R
+  scenario_2nd_line.R
 
 ###Parametrization
 
-#1)data
+likelihood_gaussian.R
 
-#2)scenario
+#data
+MDR_RR_burden_estimates_2023-02-22.csdv
+TB_burden_countries_2023-02-22.csv
 
-#3)likelihood
-
+#scenario
+scenario_1971-2015.R
+scenario_2015-2021.R
