@@ -61,7 +61,7 @@ cost <- function(free,fixed,data) {
   names(init)[names(init) == "Is0000.I"] <- "Is0000"
   
   #first period (introduction rifampicin)
-  source("/home/louis/Bureau/stage/script/model/deterministic/scenarios/scenario_1971-2015.R")
+  source("/home/louis/Bureau/stage/script/likelihood/scenarios/scenario_1971-2015.R")
   times <- seq(0, 44*12, by=1)
   simulation <- as.data.frame(ode(init,times,sir_equations,parms=pars))
   simulation <- simulation[-1,]
@@ -72,7 +72,7 @@ cost <- function(free,fixed,data) {
   names(init2)<-names(init)
   init<-init2
   times <- seq(44*12, 51*12, by=1)
-  source("/home/louis/Bureau/stage/script/model/deterministic/scenarios/scenario_2015-2021.R")
+  source("/home/louis/Bureau/stage/script/likelihood/scenarios/scenario_2015-2021.R")
   simulation2 <-  as.data.frame(ode(init,times,sir_equations,parms=pars))
   simulation2 <- simulation2[-1,]
   
