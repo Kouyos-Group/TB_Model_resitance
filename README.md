@@ -2,8 +2,6 @@
 
 ###General model 
 
-#1)generalized model
-
 #3)different scenario
 
 #3)execution
