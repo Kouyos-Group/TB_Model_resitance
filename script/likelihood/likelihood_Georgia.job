@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#SBATCH --time=48:00:0
+#SBATCH --mem=780
+#SBATCH --cpus-per-task=6
+locoll
+
+module load rstudio
+
+R < data/script/R/likelihood_gaussian_Georgia.R
+
+mv fit.RData data/result/gaussian/Georgia
+mv estimate_95.txt  data/result/gaussian/Georgia
+
