@@ -236,9 +236,7 @@ sir_equations <- function(time, state, parameters_values) {
              #cured due to the treatment
              + sum(subset(tau, str_sub(names(tau), s_first+1, s_last+1) == str_sub(names(vR)[i], s_first, s_last)) * 
                      t * subset(vT,str_sub(names(vT), s_first, s_last) == str_sub(names(vR)[i], s_first, s_last)))
-             
-              # - phi * vR[i]
-             
+            
       )
     }
     

@@ -145,9 +145,9 @@ cost <- function (free,fixed,data) {
     rR<-as.vector(rowsum(simulation[,33], rep(1:22, each=12)))/as.vector(rowsum(simulation[,31], rep(1:22, each=12)))
     rR<-rR[16:22]
     
-    error_incidence <- (Incidence-data$incidence/100000) / sd(data$incidence/100000)
-    error_death <- (dead-data$death/100000) / sd(data$death/100000)
-    error_Rresist <- (rR-data$Rresist[16:22]/100) / sd(data$Rresist[16:22]/100)
+    error_incidence <- (Incidence-data$incidence/100000)
+    error_death <- (dead-data$death/100000)
+    error_Rresist <- (rR-data$Rresist[16:22]/100)
     
     cost <- sum(error_incidence^2) + sum(error_death^2) + sum(error_Rresist^2)
     

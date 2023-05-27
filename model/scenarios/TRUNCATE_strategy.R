@@ -45,7 +45,7 @@ sir_equations <- function(time, state, parameters_values) {
     names(ita)<-ita_names
     
     #acquisition resistance 
-    rho <- c(rep(rho, each = 12), rep(rho * rho_T, each = 8))
+    rho <- c(rep(rho, each = 12), rep(rho_T, each = 8))
     names(rho) <- paste0("rho", strains, rep(treatments, each=4))
     
     #vector Susceptible infection

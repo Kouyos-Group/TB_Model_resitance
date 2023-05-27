@@ -3,7 +3,7 @@ rm(list = ls())
 # Necessary libraries
 if(!requireNamespace("pacman", quietly = T))
   install.packages("pacman")
-pacman::p_load("deSolve", "chron", "tidyverse", "deSolve", "tidyverse", "stringr", "dplyr", "ggplot2")
+pacman::p_load("deSolve", "chron", "tidyverse", "deSolve", "tidyverse", "stringr", "dplyr", "ggplot2", "numDeriv")
 
 
 #### Load data ####
@@ -51,7 +51,7 @@ scale_part_death <- exp_var_death / total_var_death
 
 sd_scale_death <- sd(data$death/100000) * sqrt(scale_part_death)
 
-### Incidence resistance ###
+###resistance ###
 total_var_Rresist <- var(data$Rresist[16:22]/100)
 
 # Régression linéaire pour calculer la variance expliquée
@@ -165,7 +165,7 @@ cost <- function (free,fixed,data) {
     return(cost)
   } else {  
     #first period (introduction rifampicin)
-    source("/home/locoll/data/script/R/scenario_1971-2015.R")
+    source("/home/locoll/data/script/R/scenario_2000-2015.R")
     times <- seq(0, 15*12, by=1)
     simulation <- as.data.frame(ode(init,times,sir_equations,parms=pars))
     simulation <- simulation[-1,]
@@ -259,7 +259,7 @@ fixed <- c(
   theta= 0.01667,  
   
   #lambda
-  l=0.0175,
+  l=0.3,
   
   #natural death
   mu= 0.0008966667, 
@@ -312,13 +312,13 @@ fit
 saveRDS(fit, file="fit.RData")
 
 #### Apply function hessian ####
-#start.time <- Sys.time()
-#hess <- hessian(fit, func=cost, free,fixed,init, data , method="Richardson")
-#end.time <- Sys.time()
-#time.taken <- round(end.time - start.time,2)
-#time.taken
-#hess
-#saveRDS(hess, file="hessian.RData")
+start.time <- Sys.time()
+hess <- hessian(fit, func=cost, free,fixed,init, data , method="Richardson")
+end.time <- Sys.time()
+time.taken <- round(end.time - start.time,2)
+time.taken
+hess
+saveRDS(hess, file="hessian.RData")
 
 
 #### creates a table with the estimated values at 95% confidence ####
