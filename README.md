@@ -8,6 +8,8 @@ Warning: you have to change the pathways to load scripts/data.
 
 likelihood_gaussian_Georgia.R
 
+likelihood_gaussian_Georgia_no_normalize.R
+
 likelihood_gaussian_Georgia_sd_scale.R
 
 see_result.R
@@ -23,11 +25,17 @@ see_result.R
   
 2. TB_burden_countries_2023-02-22.csv
 
-## Result
+## Result/Georgia/rho_low
+
+The results for the different likelihood method techniques are shown here.
 
 fit.RData
 
 ### sd_scale
+
+fit.RData
+
+### no_normalize
 
 fit.RData
 
