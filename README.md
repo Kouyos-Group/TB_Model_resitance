@@ -49,9 +49,6 @@ This file allows to simulate the model and to see the difference between two sce
 
 The two scenarios tested are with the TRUNCATE strategy and with the standard strategy. 
 
-The initial conditions and the parameters are fixed through the literature or through the likelihood method.  
-In the first stage, we simulate from 1971 (introduction of the first line of treatment with rifampicin) to 2015 (introduction of the second line of treatment with bedaquine) with only two treatments, the first line and another treatment in case of failure. In a second phase, from 2015 to 2060, a second line of treatment is introduced in addition to the two previous treatments. 
-
 ### scenarios
 
 1. standard_strategy.R
